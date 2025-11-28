@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>粵語動詞限量標記「吓(haa5)」語氣感知調查（精簡版，無開放題）</title>
+  <style>
+    body{font-family:"Noto Sans CJK TC","Microsoft JhengHei",sans-serif;line-height:1.6;margin:0;background:#f9fafb;color:#111827}
+    header,footer{background:#111827;color:#fff;padding:16px}
+    main{max-width:920px;margin:0 auto;padding:20px}
+    h1{font-size:1.6rem;margin:0 0 8px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin:16px 0}
+    .section-title{font-weight:700;margin-bottom:8px;color:#374151}
+    fieldset{border:0;margin:8px 0;padding:0}
+    legend{font-weight:600;margin:8px 0}
+    .scale{display:flex;gap:12px;flex-wrap:wrap}
+    .scale .opt{display:flex;align-items:center;gap:6px}
+    .hint{color:#6b7280;font-size:0.92rem}
+    .btns{display:flex;gap:12px;margin-top:20px}
+    button{border:0;border-radius:8px;padding:10px 16px;cursor:pointer}
+    .primary{background:#2563eb;color:#fff}
+    .secondary{background:#e5e7eb;color:#111}
+    .req{color:#dc2626}
+    .pair{padding:10px 12px;border-left:4px solid #e5e7eb;background:#fafafa;margin:10px 0}
+    .small{font-size:0.85rem}
+  </style>
+</head>
+<body>
+<header>
+  <h1>粵語動詞限量標記「吓(haa5)」語氣感知調查（精簡版，無開放題）</h1>
+  <div class="small">目的：探討「吓(haa5)」對禮貌性、直接性與接受度的影響。時間：約 5–7 分鐘。匿名、可隨時退出。</div>
+</header>
+<main>
+  <form id="surveyForm" novalidate>
+    <div class="card">
+      <div class="section-title">引言與同意 <span class="req">*</span></div>
+      <label><input type="checkbox" id="consent" required> 我已閱讀並同意參與本研究。</label>
+    </div>
+
+    <div class="card">
+      <div class="section-title">作答說明</div>
+      <p class="hint">以下每組句子包含 <strong>不含「吓」(A)</strong> 與 <strong>含「吓」(B)</strong> 兩個版本。請分別就：<strong>禮貌性、直接性、接受度</strong> 以 1–5 分評分（1 = 非常低；5 = 非常高）。必填。</p>
+    </div>
+
+    <div id="pairsContainer"></div>
+
+    <div class="btns">
+      <button type="button" class="secondary" id="downloadCsv">匯出作答（CSV）</button>
+      <button type="submit" class="primary">提交（僅本機驗證）</button>
+    </div>
+  </form>
+
+  <div class="card" id="status" aria-live="polite" style="display:none"></div>
+</main>
+<footer class="small">
+  本頁不會上傳您的資料；僅在瀏覽器中驗證並匯出 CSV。
+</footer>
+
+<script>
+const likertLabels = ["1 非常低","2 低","3 中等","4 高","5 非常高"];
+const pairs = [
+  {id:"G1", A:"唔該畀嗰件衫我睇", B:"唔該畀嗰件衫我睇吓"},
+  {id:"G2", A:"我得閒睇", B:"我得閒睇吓"},
+  {id:"G3", A:"不如你試跑慢啲", B:"不如你試吓跑慢啲"},
+  {id:"G4", A:"坐低啲嘢唞先啦！", B:"坐低啲嘢唞吓先啦！"},
+  {id:"G5", A:"我諗辦法喇", B:"我諗吓辦法喇"},
+  {id:"G6", A:"畀你睇吖嗱！", B:"畀你睇吓吖嗱！"},
+  {id:"G7", A:"就噉話啦！", B:"就噉話啦吓！"}
+];
+const dims = [
+  {key:"pol", label:"禮貌性"},
+  {key:"dir", label:"直接性"},
+  {key:"acc", label:"接受度"}
+];
+
+function renderPairs(){
+  const container = document.getElementById('pairsContainer');
+  pairs.forEach((p, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.textContent = `第 ${idx+1} 組`;
+    card.appendChild(title);
+
+    const a = document.createElement('div');
+    a.className = 'pair';
+    a.innerHTML = `<strong>A.</strong> ${p.A}`;
+    card.appendChild(a);
+
+    dims.forEach(d=>{
+      const fs = document.createElement('fieldset');
+      const lg = document.createElement('legend');
+      lg.textContent = `（${d.label}）為上句評分`;
+      fs.appendChild(lg);
+      const scale = document.createElement('div');
+      scale.className = 'scale';
+      likertLabels.forEach((lab, i)=>{
+        const id = `${p.id}A_${d.key}_${i+1}`;
+        const w = document.createElement('label');
+        w.className = 'opt';
+        w.innerHTML = `<input required type="radio" name="${p.id}A_${d.key}" value="${i+1}" id="${id}"> <span>${lab}</span>`;
+        scale.appendChild(w);
+      });
+      fs.appendChild(scale);
+      card.appendChild(fs);
+    });
+
+    const b = document.createElement('div');
+    b.className = 'pair';
+    b.innerHTML = `<strong>B.</strong> ${p.B}`;
+    card.appendChild(b);
+
+    dims.forEach(d=>{
+      const fs = document.createElement('fieldset');
+      const lg = document.createElement('legend');
+      lg.textContent = `（${d.label}）為上句評分`;
+      fs.appendChild(lg);
+      const scale = document.createElement('div');
+      scale.className = 'scale';
+      likertLabels.forEach((lab, i)=>{
+        const id = `${p.id}B_${d.key}_${i+1}`;
+        const w = document.createElement('label');
+        w.className = 'opt';
+        w.innerHTML = `<input required type="radio" name="${p.id}B_${d.key}" value="${i+1}" id="${id}"> <span>${lab}</span>`;
+        scale.appendChild(w);
+      });
+      fs.appendChild(scale);
+      card.appendChild(fs);
+    });
+
+    container.appendChild(card);
+  });
+}
+renderPairs();
+
+const form = document.getElementById('surveyForm');
+form.addEventListener('submit', e=>{
+  e.preventDefault();
+  const status = document.getElementById('status');
+  if(!document.getElementById('consent').checked){
+    status.style.display='block';
+    status.textContent='請先勾選同意參與。';
+    status.style.color = '#dc2626';
+    return;
+  }
+  if(!form.checkValidity()){
+    status.style.display='block';
+    status.textContent='尚有未評分的題目，請完成所有必填評分。';
+    status.style.color = '#dc2626';
+    return;
+  }
+  status.style.display='block';
+  status.textContent='已完成本機驗證。您可以使用「匯出作答（CSV）」下載結果。';
+  status.style.color = '#059669';
+});
+
+function toCsv(){
+  const rows = [];
+  const header = ['question_id','response'];
+  rows.push(header.join(','));
+  rows.push(['consent', document.getElementById('consent').checked ? '同意' : '不同意'].join(','));
+  pairs.forEach(p=>{
+    ['A','B'].forEach(ver=>{
+      dims.forEach(d=>{
+        const name = `${p.id}${ver}_${d.key}`;
+        const sel = form.querySelector(`input[name="${name}"]:checked`);
+        rows.push([name, sel ? sel.value : ''].join(','));
+      });
+    });
+  });
+  const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'haa5_survey_responses.csv';
+  a.click();
+}
+
+document.getElementById('downloadCsv').addEventListener('click', ()=>{
+  if(!form.checkValidity()){
+    const status = document.getElementById('status');
+    status.style.display='block';
+    status.textContent='尚有未評分的題目，請完成所有必填評分。';
+    status.style.color = '#dc2626';
+    return;
+  }
+  toCsv();
+});
+</script>
+</body>
+</html>
